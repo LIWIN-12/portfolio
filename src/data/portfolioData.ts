@@ -1,5 +1,7 @@
 import { Project, SkillCategory, ResearchPaper, ExperienceItem } from '../types';
 
+const BASE = import.meta.env.BASE_URL;
+
 export const PERSONAL_INFO = {
   name: "J.K. Liwin Jose",
   role: "AI & Data Science Engineer",
@@ -10,8 +12,8 @@ export const PERSONAL_INFO = {
   email: "jkliwinjose@gmail.com",
   github: "https://github.com/LIWIN-12",
   linkedin: "https://www.linkedin.com/in/jkliwinjose/",
-  resumePdf: "/LIWIN_RESUME_.pdf",
-  profilePhoto: "/photo1.jpg",
+  resumePdf: `${BASE}LIWIN_RESUME_.pdf`,
+  profilePhoto: `${BASE}photo1.jpg`,
   education: {
     degree: "B.Tech in Artificial Intelligence & Data Science",
     institution: "Karunya Institute of Technology and Sciences",
@@ -104,7 +106,7 @@ export const RESEARCH_PAPER: ResearchPaper = {
   location: "RVS College of Engineering and Technology, Coimbatore, India",
   year: "2025",
   badge: "IEEE Xplore Compliant",
-  image: "/Conference.png",
+  image: `${BASE}Conference.png`,
   summary: "Presents an automated deep learning framework for student engagement tracking using real-time YOLO behavioral analysis and face recognition. Evaluates perception accuracy across varying classroom conditions and provides verifiable metrics for educational technology applications.",
   tags: ["Computer Vision", "YOLOv11", "Face Recognition", "Deep Learning", "EdTech", "IEEE ICIRCA 2025"]
 };
