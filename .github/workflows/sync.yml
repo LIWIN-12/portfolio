@@ -1,10 +1,10 @@
-name: Sync to Hugging Face Hub
+name: Build and Sync to Hugging Face Hub
 on:
   push:
     branches: [main]
 
 jobs:
-  sync:
+  build-and-sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -12,9 +12,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Push to Hugging Face
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Compile React Application
+        run: npm run build
+
+      - name: Copy README to Build Directory
+        run: cp README.md dist/
+
+      - name: Push Compiled Static App to Hugging Face
         uses: huggingface/hub-sync@v0.1.0
         with:
           github_repo_id: ${{ github.repository }}
           huggingface_repo_id: LIWIN-12/Portfolio
           hf_token: ${{ secrets.HF_TOKEN }}
+          subdirectory: dist
