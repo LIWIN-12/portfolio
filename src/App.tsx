@@ -1,60 +1,275 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { motion, MotionConfig, useReducedMotion } from 'framer-motion';
-import { ArrowDown, ArrowUpRight, Github, Layers, Menu, ScanLine, Sparkles, X } from 'lucide-react';
-import { PERSONAL_INFO as person, FEATURED_PROJECTS, AI_ASSISTANT_PROJECT, ADDITIONAL_PROJECTS, SKILL_GROUPS, RESEARCH_ITEM as research, JOURNEY_ITEMS } from './data/portfolioData';
-import type { Project } from './types';
-import Portrait from './Portrait';
+import type { ReactNode } from 'react';
+import { CAPABILITIES, PERSONAL_INFO as person, PROJECTS, STACK, type Project } from './data/portfolioData';
 
-const links = [['Work', '#work'], ['Toolkit', '#practice'], ['Notes', '#lab'], ['About', '#about'], ['Contact', '#contact']];
-const projects = [FEATURED_PROJECTS[0], FEATURED_PROJECTS[2], FEATURED_PROJECTS[1], AI_ASSISTANT_PROJECT];
+/* ---------- hand-drawn SVG accents (1.5px / 2px stroke, #1A1A1A) ---------- */
+const S = { stroke: '#1A1A1A', fill: 'none', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
-function Reveal({ children, className = '' }: { children: ReactNode; className?: string }) {
-  const reduced = useReducedMotion();
-  return <motion.div className={className} initial={reduced ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .08 }} transition={{ duration: .55 }}>{children}</motion.div>;
+function Smiley() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10.5" {...S} strokeWidth="1.5" />
+      <circle cx="8.6" cy="9.8" r="1" fill="#1A1A1A" />
+      <circle cx="15.4" cy="9.8" r="1" fill="#1A1A1A" />
+      <path d="M7.8 14.2c1.3 1.8 2.8 2.7 4.2 2.7s2.9-.9 4.2-2.7" {...S} strokeWidth="1.5" />
+    </svg>
+  );
 }
-function External({ href, children, className = '' }: { href: string; children: ReactNode; className?: string }) {
-  return <a className={className} href={href} target="_blank" rel="noreferrer">{children}<ArrowUpRight size={15}/></a>;
+
+/* looping curved arrow pointing right, toward the hero portrait */
+function ArrowLoop() {
+  return (
+    <svg width="96" height="44" viewBox="0 0 96 44" aria-hidden="true">
+      <path d="M4 34 C 14 12, 26 40, 36 26 C 42 17, 48 34, 56 24 C 62 17, 70 16, 78 18" {...S} strokeWidth="1.5" />
+      <path d="M71 13 L 80 18 L 72 25" {...S} strokeWidth="1.5" />
+    </svg>
+  );
 }
-function SystemVisual({ project }: { project: Project }) {
-  const isVision = project.visual === 'engagement' || project.visual === 'wildlife';
-  const isCompare = project.visual === 'difference';
-  return <div className={'system-visual visual-' + project.visual} aria-label={project.title + ' system diagram'}>
-    <div className="visual-bar"><span>{project.eyebrow.toUpperCase()}</span><span>01</span></div>
-    {isVision && <div className="vision-graphic">
-      <div className="camera-frame"><span className="frame-corner a"/><span className="frame-corner b"/><span className="frame-corner c"/><span className="frame-corner d"/>
-        <div className={project.visual === 'wildlife' ? 'detector-shape animal' : 'detector-shape person'}><i/><i/><i/></div>
-        <div className="detection-box"><small>{project.visual === 'wildlife' ? 'OBJECT DETECTED' : 'FOCUS / ACTIVE'}</small></div>
+
+/* 8-point asterisk */
+function Ast() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
+      {[0, 45, 90, 135].map((a) => (
+        <line key={a} x1="8" y1="0.8" x2="8" y2="15.2" {...S} strokeWidth="1.5" transform={`rotate(${a} 8 8)`} />
+      ))}
+    </svg>
+  );
+}
+
+/* 2px line-art capability icons */
+function Icon({ name }: { name: 'nodes' | 'camera' | 'browser' | 'checklist' }) {
+  const p = { ...S, strokeWidth: 2 };
+  if (name === 'nodes')
+    return (
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="3" y="6" width="24" height="17" rx="2" {...p} />
+        <path d="M9 23 L9 29 M9 29 L21 29 M21 23 L21 29" {...p} />
+        <circle cx="10" cy="14" r="2" {...p} />
+        <circle cx="17" cy="10" r="2" {...p} />
+        <circle cx="23" cy="15" r="2" {...p} />
+        <path d="M12 13.5 L15 11 M19 11 L21.5 14" {...p} />
+      </svg>
+    );
+  if (name === 'camera')
+    return (
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="3" y="8" width="28" height="19" rx="2" {...p} />
+        <circle cx="17" cy="17.5" r="5.5" {...p} />
+        <circle cx="17" cy="17.5" r="1.8" fill="#1A1A1A" />
+        <path d="M11 8 L13 4.5 L21 4.5 L23 8" {...p} />
+      </svg>
+    );
+  if (name === 'browser')
+    return (
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="3" y="5" width="28" height="24" rx="2" {...p} />
+        <path d="M3 11 L31 11" {...p} />
+        <circle cx="7" cy="8" r="0.9" fill="#1A1A1A" />
+        <circle cx="10.5" cy="8" r="0.9" fill="#1A1A1A" />
+        <path d="M7 16 L20 16 M7 20.5 L27 20.5 M7 25 L16 25" {...p} />
+      </svg>
+    );
+  return (
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+      <rect x="6" y="4" width="22" height="27" rx="2" {...p} />
+      <path d="M12 4 L12 2 L22 2 L22 4" {...p} />
+      <path d="M11 12 L13.5 14.5 L18 10" {...p} />
+      <path d="M21 13 L25 13" {...p} />
+      <path d="M11 21 L13.5 23.5 L18 19" {...p} />
+      <path d="M21 22 L25 22" {...p} />
+    </svg>
+  );
+}
+
+/* monochrome geometric code placeholder (workspace photo stand-in) */
+function CodePlaceholder() {
+  const bars: Array<[number, number, number]> = [
+    [4, 8, 26], [4, 12, 38], [4, 16, 20], [8, 16, 40], [8, 20, 30], [12, 20, 44],
+    [12, 24, 22], [16, 24, 36], [16, 28, 28], [20, 28, 42], [20, 32, 18], [24, 32, 34],
+    [24, 36, 26], [28, 36, 40], [28, 40, 14], [32, 40, 30],
+  ];
+  return (
+    <div className="code-card" role="img" aria-label="Monochrome code placeholder graphic">
+      <svg viewBox="0 0 48 46" aria-hidden="true">
+        {bars.map(([x, y, w], i) => (
+          <rect key={i} x={x} y={y * 0.82 + 2} width={w * 0.6} height="1.6" fill="#1A1A1A" />
+        ))}
+        <rect x="4" y="2" width="6" height="2.4" fill="#1A1A1A" />
+      </svg>
+    </div>
+  );
+}
+
+/* ---------- shared bits ---------- */
+function External({ href, children }: { href: string; children: string }) {
+  return (
+    <a className="ulink" href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  );
+}
+
+function SectionHead({ children }: { children: ReactNode }) {
+  return (
+    <div className="section-head">
+      <span className="box">{children}</span>
+    </div>
+  );
+}
+
+function ProjectCard({ project }: { project: Project }) {
+  return (
+    <article className="project">
+      <h3>
+        <Ast />
+        <span>{project.title}</span>
+      </h3>
+      <p>{project.summary}</p>
+      <div className="project-links">
+        {project.liveUrl && <External href={project.liveUrl}>[LIVE DEMO]</External>}
+        {project.codeUrl && <External href={project.codeUrl}>[GITHUB CODE]</External>}
       </div>
-      <div className="vision-readout"><span>INPUT STREAM</span><span>MODEL INFERENCE</span><span>ANNOTATED OUTPUT</span></div>
-    </div>}
-    {isCompare && <div className="compare-graphic"><div className="compare-card"><span>BEFORE</span><b/></div><div className="compare-arrow">+</div><div className="compare-card changed"><span>AFTER</span><b/></div><div className="compare-result"><span>DIFF</span><i/><i/><i/></div></div>}
-    {!isVision && !isCompare && <div className="rag-graphic"><div className="doc-stack"><i/><i/><i/></div><div className="node-flow"><span/><i/><span/><i/><span/></div><div className="answer-card"><b>ANSWER</b><i/><i/></div></div>}
-    <div className="visual-footer"><span>INPUT</span><span>PROCESS</span><span>OUTPUT</span></div>
-  </div>;
+    </article>
+  );
 }
-function CaseStudy({ project, index }: { project: Project; index: number }) {
-  return <Reveal className={'case-study ' + (index % 2 ? 'reverse' : '')}>
-    <div className="case-art"><SystemVisual project={project}/><ol className="workflow" aria-label={project.title + ' workflow'}>{project.workflow.map((step, i) => <li key={step}><span>0{i + 1}</span>{step}</li>)}</ol></div>
-    <div className="case-copy"><p className="eyebrow">PROJECT 0{index + 1} / {project.eyebrow}</p><h3>{project.title}</h3><p className="case-summary">{project.summary}</p><div className="case-detail"><div><h4>Problem</h4><p>{project.problem}</p></div><div><h4>Approach</h4><p>{project.approach}</p></div></div><div className="chips">{project.tech.map(t => <span key={t}>{t}</span>)}</div><p className="outcome"><span>What it delivers</span>{project.outcome}</p><div className="project-links">{project.repositoryUrl && <External href={project.repositoryUrl}>View source</External>}{project.liveUrl && <External href={project.liveUrl}>Live app</External>}</div></div>
-  </Reveal>;
-}
+
+/* ---------- page ---------- */
 export default function App() {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
-    document.addEventListener('keydown', close); return () => document.removeEventListener('keydown', close);
-  }, []);
-  return <MotionConfig reducedMotion="user">
-    <a className="skip-link" href="#main">Skip to content</a>
-    <header className="site-header"><a className="wordmark" href="#home" aria-label="Liwin Jose home">LJ<span>_</span></a><nav aria-label="Main navigation" className={open ? 'nav open' : 'nav'} id="main-nav">{links.map(([label, url]) => <a href={url} key={url} onClick={() => setOpen(false)}>{label}</a>)}</nav><a className="nav-resume" href={person.resumePdf} target="_blank" rel="noreferrer">Resume <ArrowUpRight size={14}/></a><button className="menu-toggle" aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} aria-controls="main-nav" onClick={() => setOpen(!open)}>{open ? <X/> : <Menu/>}</button></header>
-    <main id="main">
-      <section className="hero wrap" id="home"><div className="hero-copy"><p className="availability"><span/> Available for AI/ML opportunities</p><p className="hero-kicker">Hello, I am Liwin.</p><h1>I make AI feel<br/><em>clear, useful,</em> and<br/>human.</h1><p className="hero-intro">{person.introduction}</p><div className="hero-actions"><a className="button" href="#work">See my work <ArrowUpRight size={17}/></a><External href={person.github} className="text-button"><Github size={17}/>GitHub</External></div><div className="hero-stack"><span>CORE STACK</span>{['Python', 'OpenCV', 'PyTorch', 'FastAPI'].map(t => <span className="stack-chip" key={t}>{t}</span>)}</div></div><Portrait/><div className="hero-foot"><span>COMPUTER VISION / RAG / APPLIED ML</span><a href="#work">Scroll to projects <ArrowDown size={14}/></a></div></section>
-      <section className="practice section wrap" id="practice"><Reveal><div className="section-heading"><div><p className="eyebrow">01 / TOOLKIT</p><h2>Skills that move<br/><em>from notebook to product.</em></h2></div><p>I use practical tools to connect models, data, interfaces, and real-world workflows.</p></div><div className="capabilities">{[{title:'Vision',icon:ScanLine,copy:'Images, video, detection, and processing.',skills:SKILL_GROUPS[2].skills.slice(0,3)},{title:'Machine learning',icon:Sparkles,copy:'Training and inference for useful predictions.',skills:SKILL_GROUPS[1].skills.slice(0,3)},{title:'Retrieval',icon:Layers,copy:'Context-aware answers from documents.',skills:SKILL_GROUPS[3].skills.slice(0,3)},{title:'Delivery',icon:ArrowUpRight,copy:'APIs and apps people can actually use.',skills:SKILL_GROUPS[4].skills.slice(0,3)}].map((c,i)=><article className="capability" key={c.title}><div className="cap-top"><c.icon size={22}/><span>0{i+1}</span></div><h3>{c.title}</h3><p>{c.copy}</p><small>{c.skills.join(' / ')}</small></article>)}</div></Reveal></section>
-      <section className="work section wrap" id="work"><Reveal className="work-heading"><div><p className="eyebrow">02 / SELECTED WORK</p><h2>Small systems.<br/><em>Serious thinking.</em></h2></div><p>Four practical projects spanning vision, comparison, and retrieval.</p></Reveal>{projects.map((p,i)=><CaseStudy key={p.id} project={p} index={i}/>)}</section>
-      <section className="archive section"><div className="wrap"><Reveal><div className="work-heading"><div><p className="eyebrow">03 / MORE BUILDS</p><h2>Other problems<br/><em>I have worked on.</em></h2></div><External href={person.github}>All repositories</External></div><div className="archive-grid">{ADDITIONAL_PROJECTS.map((p,i)=><article key={p.id}><div className="archive-index"><span>0{i+5}</span><span>{p.eyebrow}</span></div><h3>{p.title}</h3><p>{p.summary}</p><div className="archive-flow">{p.workflow.map((step,j)=><span key={step}>{j > 0 && ' -> '}{step}</span>)}</div>{p.repositoryUrl ? <External href={p.repositoryUrl}>View source</External> : <span className="source-note">Source not linked</span>}</article>)}</div></Reveal></div></section>
-      <section className="lab section wrap" id="lab"><Reveal className="lab-layout"><div><p className="eyebrow">04 / LAB NOTES</p><h2>Learning in public.<br/><em>Building with purpose.</em></h2><p className="muted">A conference presentation and the process behind the work.</p><div className="conference-note"><span>ICIRCA 2025</span><span>Conference presentation</span></div></div><article className="research"><p className="eyebrow">{research.status}</p><h3>{research.title}</h3><p>{research.summary}</p><p className="venue">{research.venue}<br/>{research.date}</p><div className="chips">{research.topics.map(t=><span key={t}>{t}</span>)}</div><External href={research.evidenceUrl}>View certificate</External></article></Reveal></section>
-      <section className="about section wrap" id="about"><Reveal className="about-layout"><div><p className="eyebrow">05 / ABOUT ME</p><h2>Curious by default.<br/><em>Practical by choice.</em></h2><div className="portrait-row"><img src={person.profilePhoto} alt="J.K. Liwin Jose" loading="lazy"/><p>{person.introduction}<br/><br/>My focus is building thoughtful, useful AI applications with clear workflows.</p></div></div><div className="timeline">{JOURNEY_ITEMS.map(j=><article key={j.title}><p className="eyebrow">{j.period}</p><h3>{j.title}</h3><p className="organization">{j.organization}</p><p>{j.description}</p><ul>{j.highlights.map(h=><li key={h}>{h}</li>)}</ul></article>)}</div></Reveal></section>
-      <section className="contact" id="contact"><div className="wrap"><Reveal><p className="eyebrow">06 / CONTACT</p><h2>Want to build something<br/><em>useful together?</em></h2><a className="contact-email" href={'mailto:'+person.email}>{person.email}<ArrowUpRight/></a><div className="contact-bottom"><p>Open to entry-level AI/ML, computer vision, and data science roles.</p><div><External href={person.github}>GitHub</External><External href={person.linkedin}>LinkedIn</External></div></div></Reveal></div></section>
-    </main><footer className="wrap"><span>Copyright {new Date().getFullYear()} J.K. Liwin Jose</span><a href="#home">Back to top</a></footer>
-  </MotionConfig>;
+  return (
+    <>
+      <a className="skip-link" href="#main">Skip to content</a>
+      <main id="main" className="wrap">
+
+        {/* SECTION 1 — HERO */}
+        <section className="hero" id="home">
+          <div>
+            <p className="hero-label">
+              {person.roleLine1}
+              <br />
+              {person.roleLine2}
+            </p>
+            <p className="hero-tagline">{person.tagline}</p>
+          </div>
+          <div className="hero-stage">
+            <img
+              className="hero-portrait"
+              src={person.profilePhoto}
+              alt="Portrait of J. K. Liwin Jose"
+              fetchPriority="high"
+            />
+            <span className="hero-box-name box">
+              <Smiley />
+              {person.firstName}
+            </span>
+            <span className="hero-box-surname box">{person.lastName}</span>
+            <span className="hero-arrow"><ArrowLoop /></span>
+          </div>
+        </section>
+
+        {/* SECTION 2 — MY WORK / ABOUT & EXPERIENCE */}
+        <section id="work">
+          <div className="work-grid">
+            <CodePlaceholder />
+            <div>
+              <span className="work-head box">
+                MY WORK
+                <Smiley />
+              </span>
+              <p className="bio">
+                B.Tech graduate in Artificial Intelligence and Data Science (Karunya Institute of
+                Technology and Sciences, 2021–2025) who builds and ships Python and LLM projects
+                independently: a deployed RAG assistant (FastAPI, Gemini, ChromaDB) with prompt
+                engineering, JSON/REST API integration, and multi-model fallback, plus
+                custom-trained YOLOv11 models, computer-vision apps, and Streamlit tools.
+              </p>
+              <div className="exp-grid">
+                <article className="exp-item">
+                  <h3>
+                    <Ast />
+                    <span>SOFTWARE ANALYST — BONIFON TECHNOLOGIES</span>
+                  </h3>
+                  <p className="exp-date">(Jun 2026 – Present)</p>
+                  <p className="exp-body">
+                    Manual web-app testing &amp; defect reporting; building an internal Python +
+                    YOLO + AWS Rekognition face-recognition attendance system integrated into Ruby
+                    on Rails.
+                  </p>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 3 — CORE SKILLS & SERVICES */}
+        <section id="services">
+          <SectionHead>CORE SKILLS &amp; SERVICES</SectionHead>
+          <div className="caps">
+            {CAPABILITIES.map((c) => (
+              <article className="cap" key={c.title}>
+                <span className="cap-icon"><Icon name={c.icon} /></span>
+                <div>
+                  <h3>{c.title}</h3>
+                  <p>{c.copy}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 4 — FEATURED PROJECTS */}
+        <section id="projects">
+          <SectionHead>FEATURED PROJECTS</SectionHead>
+          <div className="projects">
+            {PROJECTS.map((p) => (
+              <ProjectCard key={p.title} project={p} />
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 5 — TECH STACK STRIP */}
+        <section id="stack">
+          <div className="stack">
+            {STACK.map((s) => (
+              <div className="stack-row" key={s.label}>
+                <b>{s.label}:</b>
+                <span>{s.items}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 6 — CONNECT WITH ME / FOOTER */}
+        <section className="connect" id="connect">
+          <span className="connect-box box">CONNECT WITH ME</span>
+          <div className="connect-links">
+            <div className="connect-row">
+              <span className="label">Location</span>
+              <span className="plain">{person.location}</span>
+            </div>
+            <div className="connect-row">
+              <span className="label">Email</span>
+              <a className="ulink" href={person.emailHref}>{person.email}</a>
+            </div>
+            <div className="connect-row">
+              <span className="label">Phone</span>
+              <a className="ulink" href={person.phoneHref}>{person.phone}</a>
+            </div>
+            <div className="connect-row">
+              <span className="label">GitHub</span>
+              <a className="ulink" href={person.github} target="_blank" rel="noopener noreferrer">{person.githubLabel}</a>
+            </div>
+            <div className="connect-row">
+              <span className="label">LinkedIn</span>
+              <a className="ulink" href={person.linkedin} target="_blank" rel="noopener noreferrer">{person.linkedinLabel}</a>
+            </div>
+            <div className="connect-row">
+              <span className="label">Hugging Face</span>
+              <a className="ulink" href={person.huggingFace} target="_blank" rel="noopener noreferrer">{person.huggingFaceLabel}</a>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </>
+  );
 }
